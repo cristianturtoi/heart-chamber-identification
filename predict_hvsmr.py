@@ -23,7 +23,7 @@ def resize_gt_imgs(images):
 
 
 def get_resized_data():
-    X_train, X_valid, y_train, y_valid = load_2D.load_data_shuffled()
+    X_train, X_valid, y_train, y_valid = load_2D.get_shuffled_records()
     return resize_gt_imgs(X_train), resize_gt_imgs(y_train), resize_gt_imgs(X_valid), resize_gt_imgs(y_valid)
 
 

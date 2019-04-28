@@ -4,14 +4,16 @@ import random
 
 import config
 
+from keras.preprocessing.image import load_img, img_to_array
 
-def load_data_shuffled():
+
+def get_shuffled_records():
     original_2D_path = os.path.join(config.data_root, "original_2D")
 
     train_no_sample = round(0.9 * config.nr_patients)
     test_no_sample = config.nr_patients - train_no_sample
 
-    test_patients = random.sample(range(1, config.nr_patients), test_no_sample)
+    test_records = random.sample(range(1, config.nr_patients), test_no_sample)
 
     train_subjects = []
     train_subjects_gt = []
@@ -25,8 +27,7 @@ def load_data_shuffled():
         patients_slices =  sorted(glob.glob(os.path.join(original_2D_path, patient_filename)))
         gt_slices = sorted(glob.glob(os.path.join(original_2D_path, gt_filename)))
 
-
-        if id in test_patients:
+        if id in test_records:
             test_subjects.extend(patients_slices)
             test_subjects_gt.extend(gt_slices)
         else:
@@ -36,5 +37,13 @@ def load_data_shuffled():
     return train_subjects, train_subjects_gt, test_subjects, test_subjects_gt
 
 
+def load_img_to_array(img_path):
+    """
+    Loads image as grayscale and returns the image as a numpy array
+    """
+    img = load_img(img_path, color_mode='grayscale')
+    return img_to_array(img)
+
+
 if __name__ == "__main__":
-    train_subjects, train_subjects_gt, test_subjects, test_subjects_gt = load_data_shuffled()
+    train_subjects, train_subjects_gt, test_subjects, test_subjects_gt = get_shuffled_records()
