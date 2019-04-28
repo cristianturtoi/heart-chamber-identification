@@ -66,8 +66,6 @@ def convert_nifti_to_2D():
         else:
             print('There is no SA label image file for {}'.format(gt_filename))
 
-        print("ok until now for", img_filename)
-
 
 if __name__ == "__main__":
     convert_nifti_to_2D()
