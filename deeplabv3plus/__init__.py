@@ -1,0 +1,1 @@
+from deeplabv3plus.model import Deeplabv3
