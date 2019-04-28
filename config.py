@@ -8,3 +8,4 @@ label_path = os.path.join(data_root, "Ground truth")
 nr_patients = 10
 im_height = 192
 im_width = 192
+MODEL_CHECKPOINT = 'model-hvsmr.h5'
