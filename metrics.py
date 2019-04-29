@@ -36,3 +36,15 @@ def average_symmetric_surface_distance(gt, pred, zooms):
 
 def assd_loss(gt, pred):
     return assd(gt, pred)
+
+
+def jaccard_coefficient(gt, pred, axis=None, smooth=0.0):
+    intersection = K.sum(gt * pred, axis=axis)
+    area_true = K.sum(gt, axis=axis)
+    area_pred = K.sum(pred, axis=axis)
+    union = area_true + area_pred - intersection
+    return (intersection + smooth) / (union + smooth)
+
+
+def jaccard_loss(gt, pred, axis=None, smooth=0.0):
+    return 1 - jaccard_coefficient(gt, pred, axis, smooth)
