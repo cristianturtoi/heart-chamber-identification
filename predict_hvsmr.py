@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 import config
 import load_2D
+import metrics
 from deeplabv3plus import Deeplabv3
 
 
@@ -31,7 +32,7 @@ def predict():
     model_path = os.path.join(config.code_root, "model-hvsmr.h5")
     model = Deeplabv3(input_shape=(config.im_height, config.im_width, 1), classes=1, weights=None)
     model.load_weights(filepath=model_path)
-    model.compile(optimizer=Adam(), loss="binary_crossentropy", metrics=["accuracy"])
+    model.compile(optimizer=Adam(), loss=metrics.dice_loss, metrics=["accuracy"])
 
     print('This model has {} parameters'.format(model.count_params()))
 
@@ -43,12 +44,12 @@ def predict():
     print(result)
 
     # Predict on train, val and test
-    preds_train = model.predict(X_train, verbose=1)
-    preds_val = model.predict(X_valid, verbose=1)
+    # preds_train = model.predict(X_train, verbose=1)
+    # preds_val = model.predict(X_valid, verbose=1)
 
     # Threshold predictions
-    preds_train_t = (preds_train > 0.5).astype(np.uint8)
-    preds_val_t = (preds_val > 0.5).astype(np.uint8)
+    # preds_train_t = (preds_train > 0.5).astype(np.uint8)
+    # preds_val_t = (preds_val > 0.5).astype(np.uint8)
 
     # Check if training data looks all right
     # plot_sample(X_train, y_train, preds_train, preds_train_t, ix=14)
