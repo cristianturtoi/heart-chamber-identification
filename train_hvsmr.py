@@ -1,46 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from keras.layers import Input
 from keras.preprocessing.image import ImageDataGenerator
-from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax, Nadam
 from skimage.transform import resize
 
 import config
 import load_2D
 import helper
 import metrics
+import models
 from config import MODEL_CHECKPOINT
 from deeplabv3plus import Deeplabv3
-
-def select_optimizer(optimizer_name, optimizer_args):
-    optimizers = {
-        'sgd': SGD,
-        'rmsprop': RMSprop,
-        'adagrad': Adagrad,
-        'adadelta': Adadelta,
-        'adam': Adam,
-        'adamax': Adamax,
-        'nadam': Nadam,
-    }
-    if optimizer_name not in optimizers:
-        raise Exception("Unknown optimizer ({}).".format(optimizer_name))
-    return optimizers[optimizer_name](**optimizer_args)
-
-
-def create_optimizer():
-    # instantiate optimizer, and only keep args that have been set
-    # (not all optimizers have args like `momentum' or `decay')
-    optimizer_args = {
-        'lr': config.learning_rate,
-        'momentum': config.momentum,
-        'decay': config.decay
-    }
-    for k in list(optimizer_args):
-        if optimizer_args[k] is None:
-            del optimizer_args[k]
-    optimizer = select_optimizer(config.optimizer, optimizer_args)
-    return optimizer
+from helper import create_optimizer
 
 
 def resize_images(images_path, is_groundtruth=False):
@@ -75,12 +46,8 @@ def train():
 
     X_train, X_valid, y_train, y_valid = get_resized_data()
 
-    optimizer = create_optimizer()
-
-    model = Deeplabv3(input_shape=(config.im_height, config.im_width, 1), classes=1, weights=None)
-    model.compile(optimizer=optimizer, loss=metrics.dice_loss, metrics=["accuracy", metrics.dice_coef, metrics.jaccard_coef])
-    # model.compile(optimizer=Adam(), loss="binary_crossentropy", metrics=["accuracy"])
-    model.summary()
+    classes = 1
+    model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), classes)
 
     callbacks = [
         EarlyStopping(patience=10, verbose=1),

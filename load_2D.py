@@ -24,7 +24,7 @@ def get_shuffled_records():
         patient_filename = "original_2D_p" + str(id) + "_*.png"
         gt_filename = "original_gt_2D_p" + str(id) + "_*.png"
 
-        patients_slices =  sorted(glob.glob(os.path.join(original_2D_path, patient_filename)))
+        patients_slices = sorted(glob.glob(os.path.join(original_2D_path, patient_filename)))
         gt_slices = sorted(glob.glob(os.path.join(original_2D_path, gt_filename)))
 
         if id in test_records:

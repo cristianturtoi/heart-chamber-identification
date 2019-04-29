@@ -4,6 +4,7 @@ code_root = "/home/cristi/PycharmProjects/heart-chamber-identification"
 data_root = "/home/cristi/PycharmProjects/segmentation/datasets/HVSMR2016/Training short-axis cropped"
 train_path = os.path.join(data_root, "Training dataset")
 label_path = os.path.join(data_root, "Ground truth")
+test_path = "/home/cristi/PycharmProjects/segmentation/datasets/HVSMR2016/Test short-axis cropped/Test dataset"
 
 nr_patients = 10
 im_height = 192
