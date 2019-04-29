@@ -9,3 +9,10 @@ nr_patients = 10
 im_height = 192
 im_width = 192
 MODEL_CHECKPOINT = 'model-hvsmr.h5'
+
+### TRAINING ###
+# optimizer options
+optimizer = "adam"
+learning_rate = 0.001
+momentum = None  # Used only by SGD optimizer
+decay = 0.
