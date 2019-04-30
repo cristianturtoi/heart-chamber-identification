@@ -1,15 +1,13 @@
 import os
 
 import numpy as np
-from keras.optimizers import Adam
 from keras.preprocessing.image import load_img, img_to_array
 from skimage.transform import resize
 from tqdm import tqdm
 
 import config
-import load_2D
-import metrics
-from deeplabv3plus import Deeplabv3
+import loader
+import models
 
 
 def resize_gt_imgs(images):
@@ -24,19 +22,33 @@ def resize_gt_imgs(images):
 
 
 def get_resized_data():
-    X_train, X_valid, y_train, y_valid = load_2D.get_shuffled_records()
+    X_train, X_valid, y_train, y_valid = loader.get_shuffled_records()
     return resize_gt_imgs(X_train), resize_gt_imgs(y_train), resize_gt_imgs(X_valid), resize_gt_imgs(y_valid)
+
+
+def resize_images2(images):
+    resized_imgs = np.zeros((len(images), config.im_height, config.im_width, 1), dtype=images[0].dtype)
+    for idx, img in enumerate(images):
+        resized_imgs[idx] = resize(img, (config.im_height, config.im_width, 1), mode='constant', preserve_range=True)
+
+    print(np.unique(resized_imgs))
+    return resized_imgs
+
+
+def get_resized_data2():
+    X_train, X_valid, y_train, y_valid = loader.read_images_with_groundtruth()
+    return resize_images2(X_train), resize_images2(X_valid), resize_images2(y_train), resize_images2(y_valid)
 
 
 def predict():
     model_path = os.path.join(config.code_root, "model-hvsmr.h5")
-    model = Deeplabv3(input_shape=(config.im_height, config.im_width, 1), classes=1, weights=None)
-    model.load_weights(filepath=model_path)
-    model.compile(optimizer=Adam(), loss=metrics.dice_loss, metrics=["accuracy"])
+    classes = 1
+    model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), classes, weights_path=model_path)
 
     print('This model has {} parameters'.format(model.count_params()))
 
-    X_train, X_valid, y_train, y_valid = get_resized_data()
+    X_train, X_valid, y_train, y_valid = get_resized_data2()
+    # X_train, X_valid, y_train, y_valid = get_resized_data()
     print(np.unique(y_train))
 
     # Evaluate on validation set (this must be equals to the best log_loss)
@@ -44,8 +56,8 @@ def predict():
     print(result)
 
     # Predict on train, val and test
-    # preds_train = model.predict(X_train, verbose=1)
-    # preds_val = model.predict(X_valid, verbose=1)
+    preds_train = model.predict(X_train, verbose=1)
+    preds_val = model.predict(X_valid, verbose=1)
 
     # Threshold predictions
     # preds_train_t = (preds_train > 0.5).astype(np.uint8)

@@ -5,7 +5,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from skimage.transform import resize
 
 import config
-import load_2D
+import loader
 import helper
 import models
 from config import MODEL_CHECKPOINT
@@ -21,7 +21,7 @@ def resize_images(images_path, is_groundtruth=False):
     else:
         resized_imgs = np.zeros((len(images_path), config.im_height, config.im_width, 1), dtype=np.float32)
     for n, img_path in enumerate(images_path):
-        img = load_2D.load_img_to_array(img_path)
+        img = loader.load_img_to_array(img_path)
         resized_img = resize(img, (config.im_height, config.im_width, 1), mode='constant', preserve_range=True)
         if is_groundtruth:
             normalized_img = resized_img
@@ -33,15 +33,30 @@ def resize_images(images_path, is_groundtruth=False):
 
 
 def get_resized_data():
-    X_train, X_valid, y_train, y_valid = load_2D.get_shuffled_records()
+    X_train, X_valid, y_train, y_valid = loader.get_shuffled_records()
     return resize_images(X_train), resize_images(y_train), resize_images(X_valid, is_groundtruth=True), resize_images(
         y_valid, is_groundtruth=True)
+
+
+def resize_images2(images):
+    resized_imgs = np.zeros((len(images), config.im_height, config.im_width, 1), dtype=images[0].dtype)
+    for idx, img in enumerate(images):
+        resized_imgs[idx] = resize(img, (config.im_height, config.im_width, 1), mode='constant', preserve_range=True)
+
+    print(np.unique(resized_imgs))
+    return resized_imgs
+
+
+def get_resized_data2():
+    X_train, X_valid, y_train, y_valid = loader.read_images_with_groundtruth()
+    return resize_images2(X_train), resize_images2(X_valid), resize_images2(y_train), resize_images2(y_valid)
 
 
 def train():
     helper.check_gpu_usage()
 
-    X_train, X_valid, y_train, y_valid = get_resized_data()
+    X_train, X_valid, y_train, y_valid = get_resized_data2()
+    # X_train, X_valid, y_train, y_valid = get_resized_data()
 
     classes = 1
     model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), classes)
