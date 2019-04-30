@@ -7,11 +7,8 @@ from skimage.transform import resize
 import config
 import load_2D
 import helper
-import metrics
 import models
 from config import MODEL_CHECKPOINT
-from deeplabv3plus import Deeplabv3
-from helper import create_optimizer
 
 
 def resize_images(images_path, is_groundtruth=False):
