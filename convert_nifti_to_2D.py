@@ -38,6 +38,7 @@ def convert_nifti_to_2D():
             # Load image
             img = nib.load(img_file)
             data = img.get_data()
+            # data = helper.normalize_3d(data, img_file)
 
             # Load ground truth
             gt = nib.load(gt_file)
@@ -53,7 +54,7 @@ def convert_nifti_to_2D():
                     os.remove(slice_image_file)
 
                 slice_data = data[:, ::-1, s]
-                slice_data = helper.normalise_image(slice_data)
+                slice_data = helper.normalize(slice_data, axis=(0,1))
                 data_dims = [slice_data.shape[0], slice_data.shape[1]]
 
                 slice_gt_data = gt_data[:, ::-1, s]
@@ -74,8 +75,8 @@ def convert_nifti_to_2D():
 
 
 if __name__ == "__main__":
-    # convert_nifti_to_2D()
-    print("training")
-    print_images_shape(config.train_path, "training_sa_crop_pat", 0, 10)
-    print("testing")
-    print_images_shape(config.test_path, "testing_sa_crop_pat", 10, 20)
+    convert_nifti_to_2D()
+    # print("training")
+    # print_images_shape(config.train_path, "training_sa_crop_pat", 0, 10)
+    # print("testing")
+    # print_images_shape(config.test_path, "testing_sa_crop_pat", 10, 20)

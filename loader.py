@@ -55,6 +55,7 @@ def read_images_with_groundtruth():
 
     for id in range(config.nr_patients):
         images, labels = load_patient_images(id)
+        print(id, np.unique(images))
 
         if id in test_records:
             test_subjects.extend(images)

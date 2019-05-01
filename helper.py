@@ -68,19 +68,6 @@ def center_crop(ndarray, crop_size):
     return cropped
 
 
-def normalise_image(image):
-    """
-    performs mean-variance normalization
-    """
-
-    img = np.float32(image.copy())
-    mean = np.mean(img)
-    std = np.std(img)
-    epsilon = 1e-6
-
-    return np.divide((img - mean), (std + epsilon))
-
-
 def check_gpu_usage():
     print(device_lib.list_local_devices())
     print(K.tensorflow_backend._get_available_gpus())
@@ -223,6 +210,7 @@ class Iterator(object):
 def normalize(x, epsilon=1e-7, axis=(1,2)):
     x -= np.mean(x, axis=axis, keepdims=True)
     x /= np.std(x, axis=axis, keepdims=True) + epsilon
+    return x
 
 
 def load_images(data_dir, mask):
@@ -241,7 +229,7 @@ def create_generators(data_dir, batch_size, validation_split=0.0, mask='both',
 
     # maybe normalize image
     if normalize_images:
-        normalize(images, axis=(1,2))
+        normalize(images, axis=(0,1))
 
     if seed is not None:
         np.random.seed(seed)
@@ -284,3 +272,14 @@ def create_generators(data_dir, batch_size, validation_split=0.0, mask='both',
     return (train_generator, train_steps_per_epoch,
             val_generator, val_steps_per_epoch)
 
+
+def normalize_3d(img, filename):
+    # Normalize the intensity of images
+    mask = img > 0
+    mean_value = np.mean(img[mask])
+    std_value = np.std(img[mask])
+    img = (img - mean_value) / std_value
+    img = np.float32(img)
+    # seg = np.uint(seg)
+    print(filename, np.unique(img))
+    return img
