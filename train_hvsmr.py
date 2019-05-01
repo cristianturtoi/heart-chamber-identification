@@ -26,10 +26,26 @@ def get_resized_data2():
     return resize_images2(X_train), resize_images2(X_valid), resize_images2(y_train), resize_images2(y_valid)
 
 
+def crop_images(images, crop_size):
+    resized_images = np.zeros((len(images), config.im_height, config.im_width, 1), dtype=images[0].dtype)
+    for idx, img in enumerate(images):
+        resized_images[idx] = helper.center_crop(img, crop_size)[:, :, np.newaxis]
+
+    print(np.unique(resized_images))
+    return resized_images
+
+
+def get_resized_data3():
+    X_train, X_valid, y_train, y_valid = loader.read_images_with_groundtruth()
+    return crop_images(X_train, config.im_height), crop_images(X_valid, config.im_height), \
+           crop_images(y_train, config.im_height), crop_images(y_valid, config.im_height)
+
+
 def train():
     helper.check_gpu_usage()
 
-    X_train, X_valid, y_train, y_valid = get_resized_data2()
+    # X_train, X_valid, y_train, y_valid = get_resized_data2()
+    X_train, X_valid, y_train, y_valid = get_resized_data3()
     X_train, y_train = shuffle(X_train, y_train)
     X_valid, y_valid = shuffle(X_valid, y_valid)
 
@@ -38,7 +54,8 @@ def train():
     callbacks = [
         EarlyStopping(patience=10, verbose=1, monitor="val_dice_coef"),
         ReduceLROnPlateau(factor=0.1, patience=3, min_lr=0.00001, verbose=1, monitor="val_dice_coef"),
-        ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True, save_weights_only=True, monitor="val_dice_coef")
+        ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True, save_weights_only=True,
+                        monitor="val_dice_coef")
     ]
 
     augment_options = dict(
@@ -69,8 +86,8 @@ def train():
     plt.title("Learning curve")
     plt.plot(results.history["dice_coef"], label="dice_coef")
     plt.plot(results.history["val_dice_coef"], label="val_dice_coef")
-    plt.plot(np.argmin(results.history["val_dice_coef"]), np.min(results.history["val_dice_coef"]), marker="x", color="r",
-             label="best model")
+    plt.plot(np.argmin(results.history["val_dice_coef"]), np.min(results.history["val_dice_coef"]), marker="x",
+             color="r", label="best model")
     plt.xlabel("Epochs")
     plt.ylabel("log_loss")
     plt.legend()

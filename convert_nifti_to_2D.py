@@ -16,6 +16,7 @@ def print_images_shape(path, prefix, patient_start_index, patient_end_index):
             img = nib.load(img_file)
             print(idx, img.get_data().shape)
 
+
 def convert_nifti_to_2D():
     train_path = config.train_path
     gt_path = config.label_path

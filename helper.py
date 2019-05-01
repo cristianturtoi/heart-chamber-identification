@@ -44,7 +44,7 @@ def center_crop(ndarray, crop_size):
 
     Performs padding and center cropping to a specified size.
     """
-    h, w, d = ndarray.shape
+    h, w = ndarray.shape
     if crop_size == 0:
         raise ValueError('argument crop_size must be non-zero integer')
 
@@ -54,17 +54,16 @@ def center_crop(ndarray, crop_size):
         pad_w = (crop_size - w) if (w < crop_size) else 0
         rem_h = pad_h % 2
         rem_w = pad_w % 2
-        pad_dim_h = (pad_h / 2, pad_h / 2 + rem_h)
-        pad_dim_w = (pad_w / 2, pad_w / 2 + rem_w)
+        pad_dim_h = (pad_h // 2, pad_h // 2 + rem_h)
+        pad_dim_w = (pad_w // 2, pad_w // 2 + rem_w)
         # npad is tuple of (n_before, n_after) for each (h,w,d) dimension
-        npad = (pad_dim_h, pad_dim_w, (0, 0))
+        npad = (pad_dim_h, pad_dim_w)
         ndarray = np.pad(ndarray, npad, 'constant', constant_values=0)
-        h, w, d = ndarray.shape
+        h, w = ndarray.shape
     # center crop
-    h_offset = (h - crop_size) / 2
-    w_offset = (w - crop_size) / 2
-    cropped = ndarray[h_offset:(h_offset + crop_size),
-              w_offset:(w_offset + crop_size), :]
+    h_offset = (h - crop_size) // 2
+    w_offset = (w - crop_size) // 2
+    cropped = ndarray[h_offset:(h_offset + crop_size), w_offset:(w_offset + crop_size)]
 
     return cropped
 
@@ -228,6 +227,7 @@ def normalize(x, epsilon=1e-7, axis=(1,2)):
 
 def load_images(data_dir, mask):
     return data_dir, mask
+
 
 def create_generators(data_dir, batch_size, validation_split=0.0, mask='both',
                       shuffle_train_val=True, shuffle=True, seed=None,
