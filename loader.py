@@ -44,8 +44,6 @@ def read_images_with_groundtruth():
     '''
     Loads .h5 images with groundtruth
     '''
-    original_2D_path = os.path.join(config.data_root, "original_2D")
-
     train_no_sample = round(0.9 * config.nr_patients)
     test_no_sample = config.nr_patients - train_no_sample
     test_records = random.sample(range(1, config.nr_patients), test_no_sample)
@@ -56,11 +54,7 @@ def read_images_with_groundtruth():
     test_subjects_gt = []
 
     for id in range(config.nr_patients):
-        patient_filename = "original_2D_p" + str(id) + "_*.h5"
-        patients_slices = sorted(glob.glob(os.path.join(original_2D_path, patient_filename)))
-
-        images = np.array([load_image(filename) for filename in patients_slices])
-        labels = np.array([load_label(filename) for filename in patients_slices])
+        images, labels = load_patient_images(id)
 
         if id in test_records:
             test_subjects.extend(images)
@@ -70,6 +64,18 @@ def read_images_with_groundtruth():
             train_subjects_gt.extend(labels)
 
     return train_subjects, test_subjects, train_subjects_gt, test_subjects_gt
+
+
+def load_patient_images(patient_id):
+    ''' Training dataset or Testing dataset
+    returns only the path of all slices
+    '''
+    original_2D_path = os.path.join(config.data_root, "original_2D")
+    patient_filename = "original_2D_p" + str(patient_id) + "_*.h5"
+    patients_slices = sorted(glob.glob(os.path.join(original_2D_path, patient_filename)))
+    images = np.array([load_image(filename) for filename in patients_slices])
+    labels = np.array([load_label(filename) for filename in patients_slices])
+    return images, labels
 
 
 def load_image(filename):
@@ -91,6 +97,7 @@ def load_label(filename):
     label = np.squeeze(label)
 
     return label
+
 
 def load_img_to_array(img_path):
     """

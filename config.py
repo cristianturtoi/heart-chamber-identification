@@ -9,6 +9,9 @@ test_path = "/home/cristi/PycharmProjects/segmentation/datasets/HVSMR2016/Test s
 nr_patients = 10
 im_height = 192
 im_width = 192
+batch_size = 16
+seed = 2019
+classes = 3
 MODEL_CHECKPOINT = 'model-hvsmr.h5'
 
 ### TRAINING ###

@@ -6,6 +6,7 @@ from skimage.transform import resize
 from tqdm import tqdm
 
 import config
+import helper
 import loader
 import models
 
@@ -42,34 +43,32 @@ def get_resized_data2():
 
 def predict():
     model_path = os.path.join(config.code_root, "model-hvsmr.h5")
-    classes = 1
-    model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), classes, weights_path=model_path)
+    model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), config.classes, weights_path=model_path)
 
     print('This model has {} parameters'.format(model.count_params()))
 
-    X_train, X_valid, y_train, y_valid = get_resized_data2()
-    # X_train, X_valid, y_train, y_valid = get_resized_data()
-    print(np.unique(y_train))
-
-    # Evaluate on validation set (this must be equals to the best log_loss)
-    result = model.evaluate(X_valid, y_valid, verbose=1)
-    print(result)
-
     # Predict on train, val and test
-    preds_train = model.predict(X_train, verbose=1)
-    preds_val = model.predict(X_valid, verbose=1)
+    for idx in range(config.nr_patients):
+        images, masks = loader.load_patient_images(idx)
+        h, w = images[0].shape
 
-    # Threshold predictions
-    # preds_train_t = (preds_train > 0.5).astype(np.uint8)
-    # preds_val_t = (preds_val > 0.5).astype(np.uint8)
+        images = resize_images2(images)
+        predictions = []
+        for image in images:
+            img = image[np.newaxis, :, :, :]
+            mask_pred = model.predict(img, batch_size=config.batch_size)
+            mask_pred = np.argmax(mask_pred.squeeze(), -1)
 
-    # Check if training data looks all right
-    # plot_sample(X_train, y_train, preds_train, preds_train_t, ix=14)
+            # resize back to original image
+            print(idx, mask_pred.shape, np.unique(mask_pred))
+            orig_size_pred = helper.reshape(mask_pred, to_shape=(h, w))
+            predictions.append(np.uint8(orig_size_pred))
 
-    # Check if valid data looks all right
-    # plot_sample(X_valid, y_valid, preds_val, preds_val_t, ix=19)
+        # RECONSTRUCT image, and save as .nii.gz
+        predictions = np.array(predictions)
+        predictions = np.transpose(predictions, [1, 2, 0])
 
-    # plt.show()
+        print(idx, predictions.shape, np.unique(predictions))
 
 
 if __name__ == "__main__":

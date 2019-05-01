@@ -8,6 +8,14 @@ import config
 import helper
 
 
+def print_images_shape(path, prefix, patient_start_index, patient_end_index):
+    for idx in tqdm(range(patient_start_index, patient_end_index)):
+        img_filename = prefix + str(idx) + '.nii.gz'
+        img_file = os.path.join(path, img_filename)
+        if os.path.isfile(img_file):
+            img = nib.load(img_file)
+            print(idx, img.get_data().shape)
+
 def convert_nifti_to_2D():
     train_path = config.train_path
     gt_path = config.label_path
@@ -65,4 +73,8 @@ def convert_nifti_to_2D():
 
 
 if __name__ == "__main__":
-    convert_nifti_to_2D()
+    # convert_nifti_to_2D()
+    print("training")
+    print_images_shape(config.train_path, "training_sa_crop_pat", 0, 10)
+    print("testing")
+    print_images_shape(config.test_path, "testing_sa_crop_pat", 10, 20)
