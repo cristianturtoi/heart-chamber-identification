@@ -10,25 +10,23 @@ def average_symmetric_surface_distance(gt, pred, zooms):
     return assd(gt, pred, voxelspacing=zooms, connectivity=1)
 
 
-def dice_coef(gt, pred, axis=None, smooth=0.0):
+def dice_coef(gt, pred, axis=None, smooth=1):
     intersection = K.sum(gt * pred, axis=axis)
     union = K.sum(gt, axis=axis) + K.sum(pred, axis=axis)
-    # return K.mean((2. * intersection + smooth) / (union + smooth), axis=0)
-    return (2. * intersection + smooth) / (union + smooth)
+    return (2 * intersection + smooth) / (union + smooth)
 
 
-def dice_loss(gt, pred, axis=None, smooth=0.0):
+def dice_loss(gt, pred, axis=None, smooth=1):
     return 1 - dice_coef(gt, pred, axis, smooth)
 
 
-def jaccard_coef(gt, pred, axis=None, smooth=0.0):
+def jaccard_coef(gt, pred, axis=None, smooth=1):
     intersection = K.sum(gt * pred, axis=axis)
     area_true = K.sum(gt, axis=axis)
     area_pred = K.sum(pred, axis=axis)
     union = area_true + area_pred - intersection
-    # return K.mean((intersection + smooth) / (union + smooth), axis=0)
     return (intersection + smooth) / (union + smooth)
 
 
-def jaccard_loss(gt, pred, axis=None, smooth=0.0):
+def jaccard_loss(gt, pred, axis=None, smooth=1):
     return 1 - jaccard_coef(gt, pred, axis, smooth)

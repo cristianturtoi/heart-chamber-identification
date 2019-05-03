@@ -12,6 +12,7 @@ im_width = 192
 batch_size = 16
 seed = 2019
 classes = 3
+weights = [0.1, 0.45, 0.45]
 MODEL_CHECKPOINT = 'model-hvsmr.h5'
 
 ### TRAINING ###

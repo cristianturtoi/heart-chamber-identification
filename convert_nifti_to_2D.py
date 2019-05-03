@@ -54,7 +54,7 @@ def convert_nifti_to_2D():
                     os.remove(slice_image_file)
 
                 slice_data = data[:, ::-1, s]
-                slice_data = helper.normalize(slice_data, axis=(0,1))
+                # slice_data = helper.normalize(slice_data, axis=(0,1))
                 data_dims = [slice_data.shape[0], slice_data.shape[1]]
 
                 slice_gt_data = gt_data[:, ::-1, s]

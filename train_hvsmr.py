@@ -41,21 +41,35 @@ def get_resized_data3():
            crop_images(y_train, config.im_height), crop_images(y_valid, config.im_height)
 
 
+def load_preprocess_data(crop_size):
+    """
+    Load, crop (resize) and normalize data
+    :return:
+    """
+    X_train, X_valid, y_train, y_valid = loader.read_images_with_groundtruth()
+    X_train = crop_images(X_train, crop_size)
+    X_valid = crop_images(X_valid, crop_size)
+    y_train = crop_images(y_train, crop_size)
+    y_valid = crop_images(y_valid, crop_size)
+    return helper.normalize(X_train), helper.normalize(X_valid), y_train, y_valid
+
+
 def train():
     helper.check_gpu_usage()
 
     # X_train, X_valid, y_train, y_valid = get_resized_data2()
-    X_train, X_valid, y_train, y_valid = get_resized_data3()
+    # X_train, X_valid, y_train, y_valid = get_resized_data3()
+    X_train, X_valid, y_train, y_valid = load_preprocess_data(crop_size=config.im_height)
     X_train, y_train = shuffle(X_train, y_train)
     X_valid, y_valid = shuffle(X_valid, y_valid)
 
     model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), config.classes)
 
     callbacks = [
-        EarlyStopping(patience=10, verbose=1, monitor="val_dice_coef"),
-        ReduceLROnPlateau(factor=0.1, patience=3, min_lr=0.00001, verbose=1, monitor="val_dice_coef"),
+        # EarlyStopping(patience=10, verbose=1, monitor="val_dice"),
+        ReduceLROnPlateau(factor=0.1, patience=3, min_lr=0.00001, verbose=1, monitor="val_dice"),
         ModelCheckpoint(MODEL_CHECKPOINT, verbose=1, save_best_only=True, save_weights_only=True,
-                        monitor="val_dice_coef")
+                        monitor="val_dice")
     ]
 
     augment_options = dict(
@@ -76,7 +90,7 @@ def train():
     train_generator = zip(image_generator, mask_generator)
 
     results = model.fit_generator(train_generator,
-                                  epochs=100,
+                                  epochs=1000,
                                   steps_per_epoch=(len(X_train) // config.batch_size),
                                   validation_data=(X_valid, y_valid),
                                   callbacks=callbacks,
@@ -84,9 +98,9 @@ def train():
 
     plt.figure(figsize=(8, 8))
     plt.title("Learning curve")
-    plt.plot(results.history["dice_coef"], label="dice_coef")
-    plt.plot(results.history["val_dice_coef"], label="val_dice_coef")
-    plt.plot(np.argmin(results.history["val_dice_coef"]), np.min(results.history["val_dice_coef"]), marker="x",
+    plt.plot(results.history["dice"], label="dice")
+    plt.plot(results.history["val_dice"], label="val_dice")
+    plt.plot(np.argmin(results.history["val_dice"]), np.min(results.history["val_dice"]), marker="x",
              color="r", label="best model")
     plt.xlabel("Epochs")
     plt.ylabel("log_loss")
