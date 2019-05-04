@@ -67,6 +67,19 @@ def read_images_with_groundtruth():
     return train_subjects, test_subjects, train_subjects_gt, test_subjects_gt
 
 
+def load_patients():
+    images = []
+    labels = []
+    for id in range(config.nr_patients):
+        patient_images, patient_labels = load_patient_images(id)
+        print(id, np.unique(patient_images))
+
+        images.extend(patient_images)
+        labels.extend(patient_labels)
+
+    return images, labels
+
+
 def load_patient_images(patient_id):
     ''' Training dataset or Testing dataset
     returns only the path of all slices
