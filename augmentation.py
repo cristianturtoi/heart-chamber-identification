@@ -10,7 +10,7 @@ from scipy.ndimage.filters import gaussian_filter
 
 
 def crop_images(images, crop_size):
-    resized_images = np.zeros((len(images), config.im_height, config.im_width, 1), dtype=images[0].dtype)
+    resized_images = np.zeros((len(images), config.crop_size, config.crop_size, 1), dtype=images[0].dtype)
     for idx, img in enumerate(images):
         resized_images[idx] = helper.center_crop(img, crop_size)[:, :, np.newaxis]
 

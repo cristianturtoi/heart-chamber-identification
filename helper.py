@@ -1,3 +1,4 @@
+import nibabel as nib
 import numpy as np
 from keras import backend as K
 from keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax, Nadam
@@ -10,7 +11,7 @@ from scipy.ndimage.filters import gaussian_filter
 import config
 
 
-def reshape(ndarray, to_shape):
+def reshape_2D(ndarray, to_shape):
     """Reshapes a center cropped (or padded) array back to its original shape."""
     h_in, w_in = ndarray.shape
     h_out, w_out = to_shape
@@ -283,3 +284,8 @@ def normalize_3d(img, filename):
     # seg = np.uint(seg)
     print(filename, np.unique(img))
     return img
+
+
+def save_nii(img_path, data, output_affine, output_header):
+    nimg = nib.Nifti1Image(data, affine=output_affine, header=output_header)
+    nimg.to_filename(img_path)

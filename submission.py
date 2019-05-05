@@ -22,7 +22,7 @@ def main():
     output_affine = img_nii.affine
 
     classes = 1
-    model = models.deeplabv3plus_model((config.im_height, config.im_width, 1), classes, model_path)
+    model = models.deeplabv3plus_model((config.crop_size, config.crop_size, 1), classes, model_path)
     print('This model has {} parameters'.format(model.count_params()))
 
     max_pixel_value = np.array(img_data).max()
@@ -31,10 +31,10 @@ def main():
     else:
         multiplier = 1.0
     slices = img_data.shape[2]
-    images = np.zeros((slices, config.im_height, config.im_width, 1))
+    images = np.zeros((slices, config.crop_size, config.crop_size, 1))
     for slice_idx in range(slices):
         img = (np.rot90(img_data[:, ::-1, slice_idx] * multiplier)).astype('uint8')
-        img = resize(img, (config.im_height, config.im_height, 1), mode='constant', preserve_range=True)
+        img = resize(img, (config.crop_size, config.crop_size, 1), mode='constant', preserve_range=True)
         images[slice_idx] = img
 
     pred_masks = model.predict(images, batch_size=32, verbose=1)

@@ -5,7 +5,6 @@ import nibabel as nib
 from tqdm import tqdm
 
 import config
-import helper
 
 
 def print_images_shape(path, prefix, patient_start_index, patient_end_index):
@@ -17,17 +16,38 @@ def print_images_shape(path, prefix, patient_start_index, patient_end_index):
             print(idx, img.get_data().shape)
 
 
+def save_images_as_png():
+    import numpy as np
+    from PIL import Image
+    png_path = os.path.join(config.code_root, "pngs")
+    if not os.path.exists(png_path):
+        os.makedirs(png_path)
+
+    for idx in range(config.nr_patients):
+        training_file_prefix = 'training_sa_crop_pat'
+        img_filename = training_file_prefix + str(idx) + '-label.nii.gz'
+        img_file = os.path.join(config.label_path, img_filename)
+        image = nib.load(img_file).get_data()
+        for slice_idx in range(image.shape[2]):
+            slice_img = image[:, :, slice_idx]
+            stacked_image = np.stack((slice_img,) * 3, axis=-1)
+            Image.fromarray(np.uint8(stacked_image * 25)).save(os.path.join(
+                png_path, "training_sa_crop_pat{}_s{}_orig.png".format(idx, slice_idx)))
+
+
 def convert_nifti_to_2D():
     train_path = config.train_path
     gt_path = config.label_path
+    training_file_prefix = 'training_sa_crop_pat'
+    file_extension = '.nii.gz'
 
     original_2D_path = os.path.join(config.data_root, "original_2D")
     if not os.path.exists(original_2D_path):
         os.makedirs(original_2D_path)
 
     for idx in tqdm(range(config.nr_patients)):
-        img_filename = 'training_sa_crop_pat' + str(idx) + '.nii.gz'
-        gt_filename = 'training_sa_crop_pat' + str(idx) + '-label.nii.gz'
+        img_filename = training_file_prefix + str(idx) + file_extension
+        gt_filename = training_file_prefix + str(idx) + '-label.nii.gz'
 
         img_file = os.path.join(train_path, img_filename)
         gt_file = os.path.join(gt_path, gt_filename)
@@ -36,34 +56,29 @@ def convert_nifti_to_2D():
         # If the ground-truth file exists, read the data and perform the conversion
         if os.path.isfile(img_file) and os.path.isfile(gt_file):
             # Load image
-            img = nib.load(img_file)
-            data = img.get_data()
-            # data = helper.normalize_3d(data, img_file)
+            image = nib.load(img_file).get_data()
+            print(image.shape)
 
             # Load ground truth
-            gt = nib.load(gt_file)
-            gt_data = gt.get_data()
+            ground_truth_img = nib.load(gt_file).get_data()
 
-            print(data.shape)
-
-            slices = data.shape[2]
-            for s in range(slices):
+            for slice_idx in range(image.shape[2]):
                 # h5 file path
-                slice_image_file = os.path.join(original_2D_path, 'original_2D_p{}_{}.h5'.format(str(idx), str(s).zfill(3)))
+                slice_image_file = os.path.join(original_2D_path,
+                                                'original_2D_p{}_{}.h5'.format(str(idx), str(slice_idx).zfill(3)))
                 if os.path.exists(slice_image_file):
                     os.remove(slice_image_file)
 
-                slice_data = data[:, ::-1, s]
-                # slice_data = helper.normalize(slice_data, axis=(0,1))
-                data_dims = [slice_data.shape[0], slice_data.shape[1]]
+                slice_img = image[:, :, slice_idx]
+                data_dims = [slice_img.shape[0], slice_img.shape[1]]
 
-                slice_gt_data = gt_data[:, ::-1, s]
-                gt_dims = [slice_gt_data.shape[0], slice_gt_data.shape[1]]
+                slice_gt_img = ground_truth_img[:, :, slice_idx]
+                gt_dims = [slice_gt_img.shape[0], slice_gt_img.shape[1]]
 
                 # store as h5 format
                 h5file = h5py.File(slice_image_file, 'w')
-                h5file.create_dataset('data', data_dims, dtype=None, data=slice_data)
-                h5file.create_dataset('label', gt_dims, dtype=None, data=slice_gt_data)
+                h5file.create_dataset('data', data_dims, dtype=None, data=slice_img)
+                h5file.create_dataset('label', gt_dims, dtype=None, data=slice_gt_img)
                 h5file.close()
 
         elif os.path.isfile(img_file):
@@ -76,6 +91,9 @@ def convert_nifti_to_2D():
 
 if __name__ == "__main__":
     convert_nifti_to_2D()
+
+    # save_images_as_png()
+
     # print("training")
     # print_images_shape(config.train_path, "training_sa_crop_pat", 0, 10)
     # print("testing")
